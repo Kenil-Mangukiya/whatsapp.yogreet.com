@@ -4,6 +4,11 @@ import { Conversation } from "../db/models/index.js";
 // Global token storage
 let dortiboxToken = process.env.DORTIBOX_AUTH_TOKEN;
 
+// Log initial token setup
+console.log("🔧 Initial token setup:");
+console.log("🔑 Raw env token:", process.env.DORTIBOX_AUTH_TOKEN ? process.env.DORTIBOX_AUTH_TOKEN.substring(0, 20) + "..." : "No token");
+console.log("🔑 Processed token:", dortiboxToken ? dortiboxToken.substring(0, 20) + "..." : "No token");
+
 // Function to login and get new token
 const loginToDortibox = async () => {
   try {
@@ -33,6 +38,7 @@ const loginToDortibox = async () => {
     });
     
     if (data.success && data.token) {
+      // Store raw token without Bearer prefix (same format as .env)
       dortiboxToken = data.token;
       console.log("✅ New token obtained successfully");
       console.log("🔑 Token:", dortiboxToken.substring(0, 20) + "...");
