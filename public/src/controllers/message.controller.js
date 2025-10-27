@@ -2,7 +2,7 @@ import axios from "axios";
 import FormData from "form-data";
 import asyncHandler from "../utils/asyncHandler.js"; 
 import apiResponse from "../utils/apiResponse.js";
-import { sendTextMsg, markAsRead, sendBinSizeTemplate, sendFrequencyTemplate, sendPickupDaysTemplate, sendBigPurchaseTemplate, createUser, fetchWards, fetchBlocks, sendWardNumberTemplate, sendPropertyTypeTemplate, getAdditionalPickupDays, fetchFrequencyWithPrice, sendPricingOptionsTemplate, sendPaymentModeTemplate, askForPaymentTxId, showCustomerDetails, createSubscription, createTransaction } from "../function/index.js";
+import { sendTextMsg, markAsRead, sendBinSizeTemplate, sendFrequencyTemplate, sendPickupDaysTemplate, sendBigPurchaseTemplate, createUser, fetchWards, fetchBlocks, sendWardNumberTemplate, sendPropertyTypeTemplate, getAdditionalPickupDays, fetchFrequencyWithPrice, sendPricingOptionsTemplate, sendPaymentModeTemplate, askForPaymentTxId, showCustomerDetails, createSubscription, createTransaction, fetchUserList, findUserByDetails } from "../function/index.js";
 import ConversationService from "../services/conversation.service.js";
 import { chatGPT } from "../function/ai.js";
 
@@ -192,13 +192,39 @@ const webhook = asyncHandler(async (req, res) => {
           });
           
           try {
+            // Look up user details from Dortibox API
+            console.log("🔍 Looking up user details...");
+            const userName = updatedStructuredData.fullname || contact?.name || 'User';
+            const mobile = contact?.phone_no?.replace(/\D/g, '') || contact?.wa_id?.replace(/\D/g, '');
+            
+            console.log("📋 User lookup details:", { userName, mobile });
+            
+            const userDetails = await findUserByDetails(userName, mobile);
+            
+            if (!userDetails) {
+              console.log("❌ User not found in Dortibox system");
+              await sendTextMsg(sender_id, "❌ User not found in our system. Please contact support.");
+              return res.status(200).json({ success: false, error: "User not found" });
+            }
+            
+            console.log("✅ User found:", {
+              userId: userDetails.userId,
+              addressId: userDetails.addressId
+            });
+            
+            // Add user details to subscription data
+            updatedStructuredData.userId = userDetails.userId;
+            updatedStructuredData.addressId = userDetails.addressId;
+            
             // Call subscription API
             console.log("🚀 Creating subscription...");
             console.log("📊 Subscription data being sent:", {
               binSizeId: updatedStructuredData.bin_size_id,
               pickupDays: updatedStructuredData.pickup_days,
               selectedPlan: updatedStructuredData.selected_plan,
-              bigPurchase: updatedStructuredData.big_purchase
+              bigPurchase: updatedStructuredData.big_purchase,
+              userId: updatedStructuredData.userId,
+              addressId: updatedStructuredData.addressId
             });
             const subscriptionResponse = await createSubscription(updatedStructuredData);
             
@@ -210,7 +236,8 @@ const webhook = asyncHandler(async (req, res) => {
               console.log("🚀 Creating transaction...");
               const transactionData = {
                 ...updatedStructuredData,
-                subscriptionId: subscriptionId
+                subscriptionId: subscriptionId,
+                userId: updatedStructuredData.userId // Include real userId
               };
               
               const transactionResponse = await createTransaction(transactionData);

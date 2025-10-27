@@ -698,6 +698,71 @@ const getAdditionalPickupDays = (selectedDay) => {
   return [selectedDayShort, ...additionalDays];
 };
 
+// Function to fetch user list from Dortibox API
+const fetchUserList = async () => {
+  try {
+    console.log("🚀 Calling Dortibox User List API: https://dev-api.dortibox.com/admin/user/list?type=REGULAR");
+    console.log("🔑 Using Auth Token:", process.env.DORTIBOX_AUTH_TOKEN ? "Token present" : "Token missing");
+
+    const options = {
+      method: "GET",
+      url: "https://dev-api.dortibox.com/admin/user/list?type=REGULAR",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
+      }
+    };
+
+    const { data } = await axios.request(options);
+    console.log("✅ User list fetched successfully from Dortibox API");
+    console.log("📥 Total users found:", data.data?.length || 0);
+    return data;
+  } catch (error) {
+    console.log("❌ Error fetching user list:");
+    console.log("📥 Error response:", error?.response?.data || error?.message);
+    console.log("📊 Error status:", error?.response?.status);
+    throw error;
+  }
+};
+
+// Function to find user by username and mobile from API response
+const findUserByDetails = async (userName, mobile) => {
+  try {
+    console.log("🔍 Looking for user with userName:", userName, "mobile:", mobile);
+    
+    const userListResponse = await fetchUserList();
+    const users = userListResponse.data || [];
+    
+    // Find user by matching userName and mobile
+    const foundUser = users.find(user => 
+      user.userName && user.mobile && 
+      user.userName.toLowerCase().trim() === userName.toLowerCase().trim() &&
+      user.mobile === mobile
+    );
+    
+    if (foundUser) {
+      console.log("✅ User found:", {
+        _id: foundUser._id,
+        userName: foundUser.userName,
+        mobile: foundUser.mobile,
+        addressId: foundUser.address?.[0] || null
+      });
+      return {
+        userId: foundUser._id,
+        addressId: foundUser.address?.[0] || null,
+        userData: foundUser
+      };
+    } else {
+      console.log("❌ User not found with userName:", userName, "mobile:", mobile);
+      return null;
+    }
+  } catch (error) {
+    console.log("❌ Error finding user:", error?.message);
+    throw error;
+  }
+};
+
 // Function to call frequency-with-price API
 const fetchFrequencyWithPrice = async (pickupDays, binSize) => {
   try {
@@ -871,15 +936,18 @@ const askForPaymentTxId = async (from) => {
 // Function to create subscription
 const createSubscription = async (subscriptionData) => {
   try {
+    // Extract frequencyId from pricing data if available
+    const frequencyId = subscriptionData.selected_plan?._id || subscriptionData.selectedPlan?._id || subscriptionData.frequencyId;
+    
     const payload = {
-      addressId: "68fc63b42d176dd5a6e80a16", // Fixed address ID
+      addressId: subscriptionData.addressId, // Dynamic address ID from user lookup
       binSize: subscriptionData.bin_size_id || subscriptionData.binSizeId,
-      frequencyId: "6835a191289e45ec68bb74e6", // Fixed frequency ID
+      frequencyId: frequencyId, // Dynamic frequency ID from pricing API
       isBinPurchase: subscriptionData.big_purchase || false, // Dynamic value from Big Purchase? template
       pickupSchedule: subscriptionData.pickup_days || subscriptionData.pickupDays,
       price: subscriptionData.selected_plan?.discountedPrice || subscriptionData.selectedPlan?.discountedPrice || 5265,
       referralCode: "",
-      userId: "68fc62c52d176dd5a6e80823" // Fixed user ID
+      userId: subscriptionData.userId // Dynamic user ID from user lookup
     };
 
     console.log("🚀 Calling Dortibox Subscription API: https://dev-api.dortibox.com/subscription");
@@ -918,7 +986,7 @@ const createTransaction = async (transactionData) => {
       paymentMode: (transactionData.payment_method === 'Bank Transfer' || transactionData.paymentMethod === 'Bank Transfer') ? 'BANK_TRANSFER' : 'CHEQUE',
       paymentTxId: transactionData.payment_tx_id || transactionData.paymentTxId,
       subscriptionId: transactionData.subscriptionId,
-      userId: "68fc62c52d176dd5a6e80823" // Fixed user ID
+      userId: transactionData.userId // Dynamic user ID from user lookup
     };
 
     console.log("🚀 Calling Dortibox Transaction API: https://dev-api.dortibox.com/create/transaction");
@@ -1008,4 +1076,4 @@ Thank you for choosing our waste management service! 🎉
   }
 };
 
-export { sendTextMsg, markAsRead, sendFlowTemp, sendTemp, sendTempImage, orderNoGen, invoiceNoGen, sendBinSizeTemplate, sendFrequencyTemplate, sendPickupDaysTemplate, sendBigPurchaseTemplate, createUser, fetchWards, fetchBlocks, sendWardNumberTemplate, sendPropertyTypeTemplate, getAdditionalPickupDays, fetchFrequencyWithPrice, sendPricingOptionsTemplate, sendPaymentModeTemplate, askForPaymentTxId, showCustomerDetails, createSubscription, createTransaction };
+export { sendTextMsg, markAsRead, sendFlowTemp, sendTemp, sendTempImage, orderNoGen, invoiceNoGen, sendBinSizeTemplate, sendFrequencyTemplate, sendPickupDaysTemplate, sendBigPurchaseTemplate, createUser, fetchWards, fetchBlocks, sendWardNumberTemplate, sendPropertyTypeTemplate, getAdditionalPickupDays, fetchFrequencyWithPrice, sendPricingOptionsTemplate, sendPaymentModeTemplate, askForPaymentTxId, showCustomerDetails, createSubscription, createTransaction, fetchUserList, findUserByDetails };
