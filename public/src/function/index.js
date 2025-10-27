@@ -1,6 +1,66 @@
 import axios from "axios"; 
 import { Conversation } from "../db/models/index.js";
 
+// Global token storage
+let dortiboxToken = process.env.DORTIBOX_AUTH_TOKEN;
+
+// Function to login and get new token
+const loginToDortibox = async () => {
+  try {
+    console.log("🔐 Logging into Dortibox API...");
+    
+    const options = {
+      method: "POST",
+      url: "https://dev-api.dortibox.com/admin/login",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      data: {
+        email: "chirag@admin.com",
+        password: "123456"
+      }
+    };
+
+    const { data } = await axios.request(options);
+    
+    if (data.success && data.token) {
+      dortiboxToken = data.token;
+      console.log("✅ New token obtained successfully");
+      console.log("🔑 Token:", dortiboxToken.substring(0, 20) + "...");
+      return dortiboxToken;
+    } else {
+      throw new Error("Login failed - no token received");
+    }
+  } catch (error) {
+    console.log("❌ Login error:", error?.response?.data || error?.message);
+    throw error;
+  }
+};
+
+// Function to make Dortibox API calls with automatic token refresh
+const makeDortiboxApiCall = async (apiCall) => {
+  try {
+    // First attempt with current token
+    return await apiCall(dortiboxToken);
+  } catch (error) {
+    if (error?.response?.status === 401) {
+      console.log("🔄 Token expired, refreshing...");
+      try {
+        // Get new token
+        await loginToDortibox();
+        // Retry the API call with new token
+        return await apiCall(dortiboxToken);
+      } catch (refreshError) {
+        console.log("❌ Token refresh failed:", refreshError?.message);
+        throw refreshError;
+      }
+    } else {
+      throw error;
+    }
+  }
+};
+
 const sendTextMsg = async (from, text) => {
   var config = {
     method: "post",
@@ -468,19 +528,23 @@ const sendBigPurchaseTemplate = async (from) => {
 
 const fetchWards = async (blockId) => {
   try {
-    const options = {
-      method: "GET",
-      url: `https://dev-api.dortibox.com/block/${blockId}/ward`,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      }
+    const apiCall = async (token) => {
+      const options = {
+        method: "GET",
+        url: `https://dev-api.dortibox.com/block/${blockId}/ward`,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        }
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
-    console.log("✅ Wards fetched successfully:", data);
-    return data;
+    const response = await makeDortiboxApiCall(apiCall);
+    console.log("✅ Wards fetched successfully:", response.data);
+    return response.data;
   } catch (error) {
     console.log({ error: error?.response?.data || error?.message });
     throw error;
@@ -489,19 +553,23 @@ const fetchWards = async (blockId) => {
 
 const fetchBlocks = async () => {
   try {
-    const options = {
-      method: "GET",
-      url: "https://dev-api.dortibox.com/get/block?isViewOnly=true",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      }
+    const apiCall = async (token) => {
+      const options = {
+        method: "GET",
+        url: "https://dev-api.dortibox.com/get/block?isViewOnly=true",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        }
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
-    console.log("✅ Blocks fetched successfully:", data);
-    return data;
+    const response = await makeDortiboxApiCall(apiCall);
+    console.log("✅ Blocks fetched successfully:", response.data);
+    return response.data;
   } catch (error) {
     console.log({ error: error?.response?.data || error?.message });
     throw error;
@@ -514,30 +582,34 @@ const createUser = async (userData) => {
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     const userNumber = `USR${randomNumber}`;
     
-    const options = {
-      method: "POST",
-      url: "https://dev-api.dortibox.com/admin/user/create",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      },
-      data: {
-        countryCode: userData.countryCode || "+232",
-        mobile: userData.mobile,
-        password: "1234",
-        userName: userData.userName,
-        ward: userData.ward,
-        block: userData.block,
-        houseNumber: userData.houseNumber,
-        propertyType: userData.propertyType
-      }
+    const apiCall = async (token) => {
+      const options = {
+        method: "POST",
+        url: "https://dev-api.dortibox.com/admin/user/create",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        },
+        data: {
+          countryCode: userData.countryCode || "+232",
+          mobile: userData.mobile,
+          password: "1234",
+          userName: userData.userName,
+          ward: userData.ward,
+          block: userData.block,
+          houseNumber: userData.houseNumber,
+          propertyType: userData.propertyType
+        }
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
-    console.log("✅ User created successfully:", data);
+    const response = await makeDortiboxApiCall(apiCall);
+    console.log("✅ User created successfully:", response.data);
     console.log("🔢 Generated user number:", userNumber);
-    return data;
+    return response.data;
   } catch (error) {
     console.log({ error: error?.response?.data || error?.message });
     throw error;
@@ -702,22 +774,26 @@ const getAdditionalPickupDays = (selectedDay) => {
 const fetchUserList = async () => {
   try {
     console.log("🚀 Calling Dortibox User List API: https://dev-api.dortibox.com/admin/user/list?type=REGULAR");
-    console.log("🔑 Using Auth Token:", process.env.DORTIBOX_AUTH_TOKEN ? "Token present" : "Token missing");
+    console.log("🔑 Using Auth Token:", dortiboxToken ? "Token present" : "Token missing");
 
-    const options = {
-      method: "GET",
-      url: "https://dev-api.dortibox.com/admin/user/list?type=REGULAR",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      }
+    const apiCall = async (token) => {
+      const options = {
+        method: "GET",
+        url: "https://dev-api.dortibox.com/admin/user/list?type=REGULAR",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        }
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
+    const response = await makeDortiboxApiCall(apiCall);
     console.log("✅ User list fetched successfully from Dortibox API");
-    console.log("📥 Total users found:", data.data?.length || 0);
-    return data;
+    console.log("📥 Total users found:", response.data.data?.length || 0);
+    return response.data;
   } catch (error) {
     console.log("❌ Error fetching user list:");
     console.log("📥 Error response:", error?.response?.data || error?.message);
@@ -773,27 +849,31 @@ const fetchFrequencyWithPrice = async (pickupDays, binSize) => {
 
     console.log("🚀 Calling Dortibox API: https://dev-api.dortibox.com/get/frequency-with-price");
     console.log("📤 Payload being sent to Dortibox API:", JSON.stringify(payload, null, 2));
-    console.log("🔑 Using Auth Token:", process.env.DORTIBOX_AUTH_TOKEN ? "Token present" : "Token missing");
+    console.log("🔑 Using Auth Token:", dortiboxToken ? "Token present" : "Token missing");
 
-    const options = {
-      method: "POST",
-      url: "https://dev-api.dortibox.com/get/frequency-with-price",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      },
-      data: payload
+    const apiCall = async (token) => {
+      const options = {
+        method: "POST",
+        url: "https://dev-api.dortibox.com/get/frequency-with-price",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        },
+        data: payload
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
+    const response = await makeDortiboxApiCall(apiCall);
     console.log("✅ Frequency with price fetched successfully from Dortibox API");
-    console.log("📥 Response from Dortibox API:", JSON.stringify(data, null, 2));
-    return data;
+    console.log("📥 Response from Dortibox API:", JSON.stringify(response.data, null, 2));
+    return response.data;
   } catch (error) {
     console.log("❌ Error calling Dortibox API:");
     console.log("📤 Payload that failed:", JSON.stringify({ pickupDays, binSize }, null, 2));
-    console.log("🔑 Auth Token used:", process.env.DORTIBOX_AUTH_TOKEN ? "Token present" : "Token missing");
+    console.log("🔑 Auth Token used:", dortiboxToken ? "Token present" : "Token missing");
     console.log("📥 Error response:", error?.response?.data || error?.message);
     console.log("📊 Error status:", error?.response?.status);
     console.log("📋 Error headers:", error?.response?.headers);
@@ -953,23 +1033,27 @@ const createSubscription = async (subscriptionData) => {
     console.log("🚀 Calling Dortibox Subscription API: https://dev-api.dortibox.com/subscription");
     console.log("📤 Subscription payload:", JSON.stringify(payload, null, 2));
     console.log("🛒 Big Purchase decision:", subscriptionData.big_purchase ? "Yes" : "No");
-    console.log("🔑 Using Auth Token:", process.env.DORTIBOX_AUTH_TOKEN ? "Token present" : "Token missing");
+    console.log("🔑 Using Auth Token:", dortiboxToken ? "Token present" : "Token missing");
 
-    const options = {
-      method: "POST",
-      url: "https://dev-api.dortibox.com/subscription",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      },
-      data: payload
+    const apiCall = async (token) => {
+      const options = {
+        method: "POST",
+        url: "https://dev-api.dortibox.com/subscription",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        },
+        data: payload
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
+    const response = await makeDortiboxApiCall(apiCall);
     console.log("✅ Subscription created successfully");
-    console.log("📥 Subscription response:", JSON.stringify(data, null, 2));
-    return data;
+    console.log("📥 Subscription response:", JSON.stringify(response.data, null, 2));
+    return response.data;
   } catch (error) {
     console.log("❌ Error creating subscription:");
     console.log("📤 Payload that failed:", JSON.stringify(subscriptionData, null, 2));
@@ -991,23 +1075,27 @@ const createTransaction = async (transactionData) => {
 
     console.log("🚀 Calling Dortibox Transaction API: https://dev-api.dortibox.com/create/transaction");
     console.log("📤 Transaction payload:", JSON.stringify(payload, null, 2));
-    console.log("🔑 Using Auth Token:", process.env.DORTIBOX_AUTH_TOKEN ? "Token present" : "Token missing");
+    console.log("🔑 Using Auth Token:", dortiboxToken ? "Token present" : "Token missing");
 
-    const options = {
-      method: "POST",
-      url: "https://dev-api.dortibox.com/create/transaction",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `${process.env.DORTIBOX_AUTH_TOKEN}`
-      },
-      data: payload
+    const apiCall = async (token) => {
+      const options = {
+        method: "POST",
+        url: "https://dev-api.dortibox.com/create/transaction",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `${token}`
+        },
+        data: payload
+      };
+
+      return await axios.request(options);
     };
 
-    const { data } = await axios.request(options);
+    const response = await makeDortiboxApiCall(apiCall);
     console.log("✅ Transaction created successfully");
-    console.log("📥 Transaction response:", JSON.stringify(data, null, 2));
-    return data;
+    console.log("📥 Transaction response:", JSON.stringify(response.data, null, 2));
+    return response.data;
   } catch (error) {
     console.log("❌ Error creating transaction:");
     console.log("📤 Payload that failed:", JSON.stringify(transactionData, null, 2));
@@ -1076,4 +1164,4 @@ Thank you for choosing our waste management service! 🎉
   }
 };
 
-export { sendTextMsg, markAsRead, sendFlowTemp, sendTemp, sendTempImage, orderNoGen, invoiceNoGen, sendBinSizeTemplate, sendFrequencyTemplate, sendPickupDaysTemplate, sendBigPurchaseTemplate, createUser, fetchWards, fetchBlocks, sendWardNumberTemplate, sendPropertyTypeTemplate, getAdditionalPickupDays, fetchFrequencyWithPrice, sendPricingOptionsTemplate, sendPaymentModeTemplate, askForPaymentTxId, showCustomerDetails, createSubscription, createTransaction, fetchUserList, findUserByDetails };
+export { sendTextMsg, markAsRead, sendFlowTemp, sendTemp, sendTempImage, orderNoGen, invoiceNoGen, sendBinSizeTemplate, sendFrequencyTemplate, sendPickupDaysTemplate, sendBigPurchaseTemplate, createUser, fetchWards, fetchBlocks, sendWardNumberTemplate, sendPropertyTypeTemplate, getAdditionalPickupDays, fetchFrequencyWithPrice, sendPricingOptionsTemplate, sendPaymentModeTemplate, askForPaymentTxId, showCustomerDetails, createSubscription, createTransaction, fetchUserList, findUserByDetails, loginToDortibox, makeDortiboxApiCall };
