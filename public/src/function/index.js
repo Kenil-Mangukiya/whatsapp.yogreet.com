@@ -802,19 +802,17 @@ const fetchUserList = async () => {
   }
 };
 
-// Function to find user by username and mobile from API response
+// Function to find user by mobile from API response
 const findUserByDetails = async (userName, mobile) => {
   try {
-    console.log("🔍 Looking for user with userName:", userName, "mobile:", mobile);
+    console.log("🔍 Looking for user with mobile:", mobile);
     
     const userListResponse = await fetchUserList();
     const users = userListResponse.data || [];
     
-    // Find user by matching userName and mobile
+    // Find user by matching mobile only
     const foundUser = users.find(user => 
-      user.userName && user.mobile && 
-      user.userName.toLowerCase().trim() === userName.toLowerCase().trim() &&
-      user.mobile === mobile
+      user.mobile && user.mobile === mobile
     );
     
     if (foundUser) {
@@ -830,7 +828,7 @@ const findUserByDetails = async (userName, mobile) => {
         userData: foundUser
       };
     } else {
-      console.log("❌ User not found with userName:", userName, "mobile:", mobile);
+      console.log("❌ User not found with mobile:", mobile);
       return null;
     }
   } catch (error) {
