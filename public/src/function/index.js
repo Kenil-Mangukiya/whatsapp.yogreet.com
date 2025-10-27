@@ -307,38 +307,38 @@ const sendBinSizeTemplate = async (from) => {
                 rows: [
                   {
                     id: "68353e33273b70bcd6fe82b7",
-                    title: "300L Bin",
-                    description: "300 Liter bin"
+                    title: "300 Liter bin",
+                    description: ""
                   },
                   {
                     id: "68353e72273b70bcd6fe82bb",
-                    title: "1000L Bin",
-                    description: "1000 Liter bin"
+                    title: "1000 Liter bin",
+                    description: ""
                   },
                   {
                     id: "686ccd0b2b9930cde0a06eb2",
-                    title: "500L Bin",
-                    description: "500 Liter bin"
+                    title: "500 Liter bin",
+                    description: ""
                   },
                   {
                     id: "68ad2ec575c595c6aa920425",
-                    title: "120L Bin",
-                    description: "120 Liter bin"
+                    title: "120 Liter bin",
+                    description: ""
                   },
                   {
                     id: "68ad2edc75c595c6aa92042d",
-                    title: "25 KG",
-                    description: "25 KG bin"
+                    title: "25 KG bin",
+                    description: ""
                   },
                   {
                     id: "68ad2ef475c595c6aa920435",
-                    title: "50 KG",
-                    description: "50 KG bin"
+                    title: "50 KG bin",
+                    description: ""
                   },
                   {
                     id: "68ad2f0975c595c6aa92043d",
-                    title: "50 Ltr",
-                    description: "50 Liter bin"
+                    title: "50 Liter bin",
+                    description: ""
                   }
                 ]
               }
@@ -385,28 +385,28 @@ const sendFrequencyTemplate = async (from) => {
                 rows: [
                   {
                     id: "1x_per_week",
-                    title: "1x per week (Weekly pickup)",
-                    description: "Weekly pickup"
+                    title: "Weekly",
+                    description: ""
                   },
                   {
                     id: "2x_per_week",
-                    title: "2x per week (Twice weekly)",
-                    description: "Twice weekly"
+                    title: "Twice weekly",
+                    description: ""
                   },
                   {
                     id: "3x_per_week",
-                    title: "3x per week",
-                    description: "Three times weekly"
+                    title: "3x weekly",
+                    description: ""
                   },
                   {
                     id: "5x_per_week",
-                    title: "5x per week",
-                    description: "Weekdays only"
+                    title: "Weekdays",
+                    description: ""
                   },
                   {
                     id: "daily",
                     title: "Daily",
-                    description: "Every day except Sunday"
+                    description: ""
                   }
                 ]
               }

@@ -749,6 +749,25 @@ Your subscription is confirmed! Our team will contact you soon. 😊`;
           // Bin size selection - new format with actual IDs
           updatedStructuredData.bin_size = selectedOption.id;
           updatedStructuredData.bin_size_id = selectedOption.id;
+          
+          // Map bin ID to numeric size and unit
+          const binMapping = {
+            "68353e33273b70bcd6fe82b7": { binSize: 300, unit: "Ltr" },
+            "68353e72273b70bcd6fe82bb": { binSize: 1000, unit: "Ltr" },
+            "686ccd0b2b9930cde0a06eb2": { binSize: 500, unit: "Ltr" },
+            "68ad2ec575c595c6aa920425": { binSize: 120, unit: "Ltr" },
+            "68ad2edc75c595c6aa92042d": { binSize: 25, unit: "KG" },
+            "68ad2ef475c595c6aa920435": { binSize: 50, unit: "KG" },
+            "68ad2f0975c595c6aa92043d": { binSize: 50, unit: "Ltr" }
+          };
+          
+          const binData = binMapping[selectedOption.id];
+          if (binData) {
+            updatedStructuredData.binSize = binData.binSize;
+            updatedStructuredData.unit = binData.unit;
+            console.log("📊 Bin size:", binData.binSize, "Unit:", binData.unit);
+          }
+          
           console.log("📊 Updated with bin size ID:", selectedOption.id);
           console.log("📊 Bin size title:", selectedOption.title);
           
