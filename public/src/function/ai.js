@@ -155,7 +155,7 @@ JSON:
 
 Example:
 REPLY:
-👋 Hi there! Welcome to FWT — your FCC Certified waste service provider for Block 6 which includes wards 429-434 from Congo Cross Bridge to Tower Hill. How can I help you today?
+👋 Hi there! Welcome to FWT — your FCC Certified waste service provider for Block 6 which includes wards 429-434 from Congo Cross Bridge to Tower Hill.
 
 JSON:
 {"fullname":null,"block":null,"ward_number":null,"property_type":null,"address":null,"free_time":null}
