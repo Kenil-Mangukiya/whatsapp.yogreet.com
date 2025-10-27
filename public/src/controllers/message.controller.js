@@ -51,7 +51,7 @@ const webhook = asyncHandler(async (req, res) => {
 
         // Mark message as read first (blue tick)
         try {
-          await markAsRead(whatsapp_message_id)
+          await markAsRead(whatsapp_message_id);
           console.log("✅ Message marked as read:", whatsapp_message_id);
         } catch (markError) {
           console.error("❌ Error marking message as read:", markError.message);
