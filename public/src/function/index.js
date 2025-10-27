@@ -22,7 +22,15 @@ const loginToDortibox = async () => {
       }
     };
 
+    console.log("📤 Login request payload:", { email: "chirag@admin.com", password: "123456" });
+
     const { data } = await axios.request(options);
+    
+    console.log("📥 Login response:", {
+      success: data.success,
+      hasToken: !!data.token,
+      tokenLength: data.token ? data.token.length : 0
+    });
     
     if (data.success && data.token) {
       dortiboxToken = data.token;
@@ -34,6 +42,7 @@ const loginToDortibox = async () => {
     }
   } catch (error) {
     console.log("❌ Login error:", error?.response?.data || error?.message);
+    console.log("❌ Login error status:", error?.response?.status);
     throw error;
   }
 };
@@ -41,15 +50,23 @@ const loginToDortibox = async () => {
 // Function to make Dortibox API calls with automatic token refresh
 const makeDortiboxApiCall = async (apiCall) => {
   try {
+    console.log("🔄 makeDortiboxApiCall: First attempt with current token");
+    console.log("🔑 Current token:", dortiboxToken ? dortiboxToken.substring(0, 20) + "..." : "No token");
+    
     // First attempt with current token
     return await apiCall(dortiboxToken);
   } catch (error) {
+    console.log("❌ First API call failed:", error?.response?.status, error?.response?.data?.message);
+    
     if (error?.response?.status === 401) {
       console.log("🔄 Token expired, refreshing...");
       try {
         // Get new token
         await loginToDortibox();
+        console.log("🔑 New token obtained:", dortiboxToken ? dortiboxToken.substring(0, 20) + "..." : "No token");
+        
         // Retry the API call with new token
+        console.log("🔄 Retrying API call with new token");
         return await apiCall(dortiboxToken);
       } catch (refreshError) {
         console.log("❌ Token refresh failed:", refreshError?.message);
@@ -580,9 +597,11 @@ const createUser = async (userData) => {
   try {
     // Generate random 4-digit number
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
-    const userNumber = `USR${randomNumber}`;
+    
+    console.log("🔑 Current token before API call:", dortiboxToken ? dortiboxToken.substring(0, 20) + "..." : "No token");
     
     const apiCall = async (token) => {
+      console.log("🔑 Token being used in createUser API call:", token ? token.substring(0, 20) + "..." : "No token");
       const options = {
         method: "POST",
         url: "https://dev-api.dortibox.com/admin/user/create",
@@ -603,15 +622,21 @@ const createUser = async (userData) => {
         }
       };
 
+      console.log("📤 createUser API request headers:", {
+        "Content-Type": options.headers["Content-Type"],
+        "Accept": options.headers["Accept"],
+        "Authorization": options.headers["Authorization"] ? options.headers["Authorization"].substring(0, 20) + "..." : "No Authorization"
+      });
+
       return await axios.request(options);
     };
 
     const response = await makeDortiboxApiCall(apiCall);
     console.log("✅ User created successfully:", response.data);
-    console.log("🔢 Generated user number:", userNumber);
     return response.data;
   } catch (error) {
-    console.log({ error: error?.response?.data || error?.message });
+    console.log("❌ createUser error:", error?.response?.data || error?.message);
+    console.log("❌ createUser error status:", error?.response?.status);
     throw error;
   }
 };
