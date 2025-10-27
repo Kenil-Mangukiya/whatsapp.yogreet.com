@@ -307,22 +307,22 @@ const sendBinSizeTemplate = async (from) => {
                 rows: [
                   {
                     id: "68353e33273b70bcd6fe82b7",
-                    title: "300 Ltr",
+                    title: "300 Liter bin",
                     description: "300 Liter bin"
                   },
                   {
                     id: "68353e72273b70bcd6fe82bb",
-                    title: "1000 Ltr",
+                    title: "1000 Liter bin",
                     description: "1000 Liter bin"
                   },
                   {
                     id: "686ccd0b2b9930cde0a06eb2",
-                    title: "500 Ltr",
+                    title: "500 Liter bin",
                     description: "500 Liter bin"
                   },
                   {
                     id: "68ad2ec575c595c6aa920425",
-                    title: "120 Ltr",
+                    title: "120 Liter bin",
                     description: "120 Liter bin"
                   },
                   {
@@ -385,27 +385,27 @@ const sendFrequencyTemplate = async (from) => {
                 rows: [
                   {
                     id: "1x_per_week",
-                    title: "1x per week",
+                    title: "1x per week (Weekly pickup)",
                     description: "Weekly pickup"
                   },
                   {
                     id: "2x_per_week",
-                    title: "2x per week",
+                    title: "2x per week (Twice weekly)",
                     description: "Twice weekly"
                   },
                   {
                     id: "3x_per_week",
-                    title: "3x per week",
+                    title: "3x per week (Three times weekly)",
                     description: "Three times weekly"
                   },
                   {
                     id: "5x_per_week",
-                    title: "5x per week",
+                    title: "5x per week (Weekdays only)",
                     description: "Weekdays only"
                   },
                   {
                     id: "daily",
-                    title: "Daily (6x per week)",
+                    title: "Daily (Every day except Sunday)",
                     description: "Every day except Sunday"
                   }
                 ]

@@ -382,8 +382,8 @@ const webhook = asyncHandler(async (req, res) => {
           return res.status(200).json({ success: true });
         }
 
-        // Create user in Dortibox API if address is collected
-        if (structuredData && structuredData.address && structuredData.block && structuredData.ward_number) {
+        // Create user in Dortibox API if address is collected AND user hasn't been created yet
+        if (structuredData && structuredData.address && structuredData.block && structuredData.ward_number && !structuredData.user_created) {
           console.log("🚀 Creating user in Dortibox API...");
             
             // Extract mobile number from contact
@@ -436,6 +436,9 @@ const webhook = asyncHandler(async (req, res) => {
               console.log("🏘️ Block ID:", matchingBlock._id, "Block Name:", matchingBlock.name);
               console.log("📍 Ward ID:", matchingWard._id, "Ward Number:", matchingWard.wardNumber);
               
+              // Mark user as created to prevent duplicate creation
+              structuredData.user_created = true;
+              
               // Send success message
               await sendTextMsg(sender_id, "✅ Your account has been created successfully! Let's continue with your subscription setup.");
               
@@ -463,23 +466,12 @@ const webhook = asyncHandler(async (req, res) => {
                   error?.response?.data?.message?.includes('User Already Exist')) {
                 console.log("ℹ️ User already exists, continuing with flow");
                 
-                // Send continuation message
-                await sendTextMsg(sender_id, "✅ Your information is already in our system! Let's continue with your subscription setup.");
+                // Mark user as created to prevent duplicate creation
+                structuredData.user_created = true;
                 
-                // Save the continuation message
-                await ConversationService.saveOutgoingMessage({
-                  contact_id,
-                  sender_id: 'system',
-                  receiver_id: sender_id,
-                  message_content: "✅ Your information is already in our system! Let's continue with your subscription setup.",
-                  message_type: 'text',
-                  status: 'sent',
-                  thread_id,
-                  contact_name: contact?.name,
-                  contact_phone: contact?.phone_no,
-                  contact_wa_id: contact?.wa_id,
-                  structured_data: JSON.stringify(structuredData)
-                });
+                // Skip the "Your information is already in our system!" message
+                // Just continue with the flow without sending any message
+                console.log("✅ User already exists, skipping duplicate message");
               } else {
                 console.error("❌ Failed to create user in Dortibox API:", error);
                 
@@ -759,7 +751,6 @@ Your subscription is confirmed! Our team will contact you soon. 😊`;
           
           // Send frequency template next
           await sendFrequencyTemplate(sender_id);
-          await sendTextMsg(sender_id, "Perfect! Now let's set up your pickup schedule.");
           
         } else if (selectedOption.id.includes('per_week') || selectedOption.id === 'daily') {
           // Frequency selection
