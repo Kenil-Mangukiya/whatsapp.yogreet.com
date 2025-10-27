@@ -385,27 +385,32 @@ const sendFrequencyTemplate = async (from) => {
                 rows: [
                   {
                     id: "1x_per_week",
-                    title: "Weekly",
+                    title: "1x per week",
                     description: ""
                   },
                   {
                     id: "2x_per_week",
-                    title: "Twice weekly",
+                    title: "2x per week",
                     description: ""
                   },
                   {
                     id: "3x_per_week",
-                    title: "3x weekly",
+                    title: "3x per week",
+                    description: ""
+                  },
+                  {
+                    id: "4x_per_week",
+                    title: "4x per week",
                     description: ""
                   },
                   {
                     id: "5x_per_week",
-                    title: "Weekdays",
+                    title: "5x per week",
                     description: ""
                   },
                   {
                     id: "daily",
-                    title: "Daily",
+                    title: "Daily (6x/week)",
                     description: ""
                   }
                 ]
