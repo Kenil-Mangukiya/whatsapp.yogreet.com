@@ -1,4 +1,5 @@
 import { Conversation } from '../db/models/index.js';
+import { Op } from 'sequelize';
 
 class ConversationService {
     /**
@@ -121,6 +122,26 @@ class ConversationService {
             return conversationCount > 0;
         } catch (error) {
             console.error('❌ Error checking previous conversation:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Check if user has been created in Dortibox API
+     */
+    static async hasUserBeenCreated(contact_id) {
+        try {
+            const userCreatedMessage = await Conversation.findOne({
+                where: { 
+                    contact_id,
+                    message_content: {
+                        [Op.like]: '%User created successfully%'
+                    }
+                }
+            });
+            return !!userCreatedMessage;
+        } catch (error) {
+            console.error('❌ Error checking if user was created:', error);
             return false;
         }
     }

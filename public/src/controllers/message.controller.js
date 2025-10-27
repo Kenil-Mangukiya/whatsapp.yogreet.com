@@ -383,7 +383,10 @@ const webhook = asyncHandler(async (req, res) => {
         }
 
         // Create user in Dortibox API if address is collected AND user hasn't been created yet
-        if (structuredData && structuredData.address && structuredData.block && structuredData.ward_number && !structuredData.user_created) {
+        // Check if user was already created in previous messages
+        const hasUserBeenCreated = await ConversationService.hasUserBeenCreated(contact_id);
+        
+        if (structuredData && structuredData.address && structuredData.block && structuredData.ward_number && !hasUserBeenCreated) {
           console.log("🚀 Creating user in Dortibox API...");
             
             // Extract mobile number from contact

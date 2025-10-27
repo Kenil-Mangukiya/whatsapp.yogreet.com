@@ -303,26 +303,26 @@ const sendBinSizeTemplate = async (from) => {
             button: "Select Bin Size",
             sections: [
               {
-                title: "Waste Bin Sizes",
+                title: "Bin Sizes",
                 rows: [
                   {
                     id: "68353e33273b70bcd6fe82b7",
-                    title: "300 Liter bin",
+                    title: "300L Bin",
                     description: "300 Liter bin"
                   },
                   {
                     id: "68353e72273b70bcd6fe82bb",
-                    title: "1000 Liter bin",
+                    title: "1000L Bin",
                     description: "1000 Liter bin"
                   },
                   {
                     id: "686ccd0b2b9930cde0a06eb2",
-                    title: "500 Liter bin",
+                    title: "500L Bin",
                     description: "500 Liter bin"
                   },
                   {
                     id: "68ad2ec575c595c6aa920425",
-                    title: "120 Liter bin",
+                    title: "120L Bin",
                     description: "120 Liter bin"
                   },
                   {
@@ -395,17 +395,17 @@ const sendFrequencyTemplate = async (from) => {
                   },
                   {
                     id: "3x_per_week",
-                    title: "3x per week (Three times weekly)",
+                    title: "3x per week",
                     description: "Three times weekly"
                   },
                   {
                     id: "5x_per_week",
-                    title: "5x per week (Weekdays only)",
+                    title: "5x per week",
                     description: "Weekdays only"
                   },
                   {
                     id: "daily",
-                    title: "Daily (Every day except Sunday)",
+                    title: "Daily",
                     description: "Every day except Sunday"
                   }
                 ]
