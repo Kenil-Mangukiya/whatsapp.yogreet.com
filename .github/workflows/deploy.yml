@@ -18,13 +18,17 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # This uses the private key stored in GitHub Secrets
 
-    - name: Deploy to Server
+    - name: Add SSH key to known hosts
       run: |
-        # This command copies your code to the server
-        scp -r * root@143.244.157.117:/var/www/whatsapp.yogreet.com/  # This deploys the code
-      env:
-        SERVER_USER: root
-        SERVER_IP: 143.244.157.117
+        mkdir -p ~/.ssh
+        ssh-keyscan -H 143.244.157.117 >> ~/.ssh/known_hosts  # Adds the server's SSH key to known hosts
+
+    - name: SSH and Git Pull
+      run: |
+        ssh root@143.244.157.117 << 'EOF'
+          cd /var/www/whatsapp.yogreet.com  # Navigate to the project directory
+          git pull origin main  # Pull the latest changes from the 'main' branch
+        EOF
 
     - name: Restart Backend Server
       run: |
