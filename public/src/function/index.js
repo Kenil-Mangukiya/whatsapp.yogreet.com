@@ -535,7 +535,7 @@ const fetchWards = async (blockId) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         }
       };
 
@@ -560,7 +560,7 @@ const fetchBlocks = async () => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         }
       };
 
@@ -589,7 +589,7 @@ const createUser = async (userData) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         },
         data: {
           countryCode: userData.countryCode || "+232",
@@ -783,7 +783,7 @@ const fetchUserList = async () => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         }
       };
 
@@ -856,7 +856,7 @@ const fetchFrequencyWithPrice = async (pickupDays, binSize) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         },
         data: payload
       };
@@ -1040,7 +1040,7 @@ const createSubscription = async (subscriptionData) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         },
         data: payload
       };
@@ -1082,7 +1082,7 @@ const createTransaction = async (transactionData) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `${token}`
+          Authorization: `Bearer ${token}`
         },
         data: payload
       };
