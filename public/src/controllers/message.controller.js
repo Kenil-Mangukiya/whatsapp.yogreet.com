@@ -40,6 +40,15 @@ const webhook = asyncHandler(async (req, res) => {
 
     if (type === "text") {
       let textMsg = message?.text?.body?.trim();
+      let originalMessage = textMsg;
+      
+      // Check if this is a welcome message with QR code BEFORE filtering
+      const isWelcomeMessage = textMsg && (
+        /^(hii+|hello+|hey+|hi+)\s*[A-Z]{2}\d{3}-\d{4}/i.test(textMsg) ||
+        /^(hii+|hello+|hey+|hi+)\s*[A-Z]{2}\d{6}/i.test(textMsg) ||
+        /^(hii+|hello+|hey+|hi+)\s*-\s*[A-Z]{2}\d{3}-\d{4}/i.test(textMsg) ||
+        /^(hii+|hello+|hey+|hi+)\s*-\s*[A-Z]{2}\d{6}/i.test(textMsg)
+      );
       
       // Filter out QR code data (format: "text - DO415-0001" or similar patterns)
       if (textMsg) {
@@ -50,8 +59,13 @@ const webhook = asyncHandler(async (req, res) => {
         textMsg = textMsg.replace(/\s*-\s*[A-Z]{2}\d{3}-\d{4}/g, '').trim();
         textMsg = textMsg.replace(/\s*-\s*[A-Z]{2}\d{6}/g, '').trim();
         
-        console.log("🔍 Original message:", message?.text?.body);
+        // Remove QR codes that appear after greetings (like "hiii DO415-0001")
+        textMsg = textMsg.replace(/\s+[A-Z]{2}\d{3}-\d{4}/g, '').trim();
+        textMsg = textMsg.replace(/\s+[A-Z]{2}\d{6}/g, '').trim();
+        
+        console.log("🔍 Original message:", originalMessage);
         console.log("🧹 Cleaned message:", textMsg);
+        console.log("🎯 Is welcome message with QR:", isWelcomeMessage);
       }
       
       if (textMsg) {
@@ -331,8 +345,13 @@ const webhook = asyncHandler(async (req, res) => {
           }
         } else {
           // First time customer - send to AI without conversation history
+          // If this is a welcome message with QR code, send a special message to AI
+          const messageToAI = isWelcomeMessage ? 
+            `This is a welcome message with QR code. Original: "${originalMessage}", Cleaned: "${textMsg}". Please respond as if user said "${textMsg}"` : 
+            textMsg;
+            
           const aiResponse = await chatGPT({
-            message: textMsg,
+            message: messageToAI,
             conversationHistory: "",
             userInfo: {
               contact_id,
