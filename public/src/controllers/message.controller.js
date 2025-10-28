@@ -987,12 +987,12 @@ Your subscription is confirmed! Our team will contact you soon. 😊`;
           
           try {
             // Call frequency-with-price API
-            const binSizeId = "68ad2f1c75c595c6aa920445"; // Default bin size ID as mentioned
+            const binSizeId = updatedStructuredData.bin_size_id || "68ad2f1c75c595c6aa920445"; // Use customer's selected bin ID, fallback to default
             const pricingData = await fetchFrequencyWithPrice(updatedStructuredData.pickup_days, binSizeId);
             
             // Store pricing data in structured data
             updatedStructuredData.pricing_options = pricingData;
-            updatedStructuredData.bin_size_id = binSizeId;
+            // Don't overwrite bin_size_id - keep customer's selection
             
             // Send pricing options template
             await sendPricingOptionsTemplate(sender_id, pricingData);
