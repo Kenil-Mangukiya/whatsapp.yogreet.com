@@ -521,7 +521,7 @@ const sendBigPurchaseTemplate = async (from) => {
         interactive: {
           type: "button",
           body: {
-            text: "Big Purchase?"
+            text: "Bin Purchase?"
           },
           action: {
             buttons: [
@@ -999,6 +999,13 @@ const sendPaymentModeTemplate = async (from) => {
                 reply: {
                   id: "payment_cheque",
                   title: "Cheque"
+                }
+              },
+              {
+                type: "reply",
+                reply: {
+                  id: "payment_mobile_money",
+                  title: "Mobile Money"
                 }
               }
             ]

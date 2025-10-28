@@ -1015,9 +1015,15 @@ Your subscription is confirmed! Our team will contact you soon. 😊`;
             console.error("❌ Error fetching pricing options:", error);
             await sendTextMsg(sender_id, "❌ Sorry, there was an error fetching pricing options. Please try again.");
           }
-        } else if (buttonReply.id === 'payment_bank_transfer' || buttonReply.id === 'payment_cheque') {
+        } else if (buttonReply.id === 'payment_bank_transfer' || buttonReply.id === 'payment_cheque' || buttonReply.id === 'payment_mobile_money') {
           // Handle payment mode selection
-          updatedStructuredData.payment_method = buttonReply.id === 'payment_bank_transfer' ? 'Bank Transfer' : 'Cheque';
+          let paymentMethod = 'Bank Transfer';
+          if (buttonReply.id === 'payment_cheque') {
+            paymentMethod = 'Cheque';
+          } else if (buttonReply.id === 'payment_mobile_money') {
+            paymentMethod = 'Mobile Money';
+          }
+          updatedStructuredData.payment_method = paymentMethod;
           console.log("📊 Updated with payment method:", updatedStructuredData.payment_method);
           
           // Save the payment method selection
