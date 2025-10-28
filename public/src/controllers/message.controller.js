@@ -39,7 +39,21 @@ const webhook = asyncHandler(async (req, res) => {
     }
 
     if (type === "text") {
-      const textMsg = message?.text?.body?.trim();
+      let textMsg = message?.text?.body?.trim();
+      
+      // Filter out QR code data (format: "text - DO415-0001" or similar patterns)
+      if (textMsg) {
+        // Remove QR code patterns like "DO415-0001", "DO123-4567", etc.
+        textMsg = textMsg.replace(/\s*-\s*DO\d{3}-\d{4}/g, '').trim();
+        
+        // Also remove other common QR code patterns
+        textMsg = textMsg.replace(/\s*-\s*[A-Z]{2}\d{3}-\d{4}/g, '').trim();
+        textMsg = textMsg.replace(/\s*-\s*[A-Z]{2}\d{6}/g, '').trim();
+        
+        console.log("🔍 Original message:", message?.text?.body);
+        console.log("🧹 Cleaned message:", textMsg);
+      }
+      
       if (textMsg) {
         // Get conversation context
         const conversationContext = await ConversationService.getConversationContext(contact_id);
