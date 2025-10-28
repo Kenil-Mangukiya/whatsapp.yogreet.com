@@ -785,7 +785,8 @@ Your subscription is confirmed! Our team will contact you soon. 😊`;
         } else if (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].includes(selectedOption.id)) {
           // Pickup day selection - store days and ask for big purchase
           const selectedDay = selectedOption.id;
-          const additionalDays = getAdditionalPickupDays(selectedDay);
+          const frequency = updatedStructuredData.frequency || '1x_per_week'; // Default to 1x per week if not set
+          const additionalDays = getAdditionalPickupDays(selectedDay, frequency);
           updatedStructuredData.pickup_days = additionalDays;
           console.log("📊 Updated pickup days:", additionalDays);
           

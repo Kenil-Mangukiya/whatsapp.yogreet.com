@@ -775,7 +775,7 @@ const sendPropertyTypeTemplate = async (from) => {
 };
 
 // Function to get additional pickup days
-const getAdditionalPickupDays = (selectedDay) => {
+const getAdditionalPickupDays = (selectedDay, frequency) => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const dayMap = {
     'monday': 'Mon',
@@ -790,20 +790,54 @@ const getAdditionalPickupDays = (selectedDay) => {
   const selectedDayShort = dayMap[selectedDay.toLowerCase()];
   const selectedIndex = days.indexOf(selectedDayShort);
   
-  // Get two additional days (one before and one after)
-  const additionalDays = [];
-  for (let i = 1; i <= 2; i++) {
-    const prevIndex = (selectedIndex - i + 7) % 7;
-    const nextIndex = (selectedIndex + i) % 7;
-    
-    if (i === 1) {
-      additionalDays.push(days[prevIndex]);
-    } else {
-      additionalDays.push(days[nextIndex]);
-    }
+  // Determine how many additional days to add based on frequency
+  let totalDaysNeeded = 1; // Always start with 1 (the selected day)
+  
+  if (frequency === '1x_per_week') {
+    totalDaysNeeded = 1; // Only the selected day
+  } else if (frequency === '2x_per_week') {
+    totalDaysNeeded = 2; // Selected day + 1 more
+  } else if (frequency === '3x_per_week') {
+    totalDaysNeeded = 3; // Selected day + 2 more
+  } else if (frequency === '4x_per_week') {
+    totalDaysNeeded = 4; // Selected day + 3 more
+  } else if (frequency === '5x_per_week') {
+    totalDaysNeeded = 5; // Selected day + 4 more
+  } else if (frequency === 'daily') {
+    totalDaysNeeded = 6; // Selected day + 5 more (Monday-Saturday)
   }
   
-  return [selectedDayShort, ...additionalDays];
+  const pickupDays = [selectedDayShort];
+  
+  // Add additional days evenly distributed
+  if (totalDaysNeeded > 1) {
+    const additionalDaysNeeded = totalDaysNeeded - 1;
+    const daysToAdd = [];
+    
+    // Calculate which days to add (spread evenly across the week)
+    for (let i = 1; i <= additionalDaysNeeded; i++) {
+      const dayIndex = (selectedIndex + Math.floor(i * 7 / totalDaysNeeded)) % 7;
+      if (!pickupDays.includes(days[dayIndex])) {
+        daysToAdd.push(days[dayIndex]);
+      }
+    }
+    
+    // If we still need more days, fill in remaining days
+    while (daysToAdd.length < additionalDaysNeeded) {
+      for (let i = 0; i < 7; i++) {
+        const dayIndex = (selectedIndex + i) % 7;
+        if (!pickupDays.includes(days[dayIndex]) && !daysToAdd.includes(days[dayIndex])) {
+          daysToAdd.push(days[dayIndex]);
+          break;
+        }
+      }
+    }
+    
+    pickupDays.push(...daysToAdd.slice(0, additionalDaysNeeded));
+  }
+  
+  console.log(`📅 Frequency: ${frequency}, Selected: ${selectedDayShort}, Total days needed: ${totalDaysNeeded}, Final days: ${pickupDays}`);
+  return pickupDays;
 };
 
 // Function to fetch user list from Dortibox API
