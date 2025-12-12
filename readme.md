@@ -8,7 +8,7 @@
 
 DortiBox WhatsApp AI Assistant is an enterprise-grade conversational automation platform that transforms WhatsApp into a powerful customer service and sales channel. Built for DortiBox waste management services, this system leverages OpenAI's ChatGPT to provide intelligent, context-aware conversations that guide customers through registration, subscription selection, and payment processing. The platform seamlessly integrates with external APIs, maintains comprehensive conversation history, and automates complex multi-step workflows—reducing manual support overhead by 80% while delivering 24/7 customer engagement.
 
-## 🛠️ Tech Stack (Auto-detected)
+## 🛠️ Tech Stack
 
 ### Backend
 - **Node.js** (ES6 Modules) - Runtime environment
